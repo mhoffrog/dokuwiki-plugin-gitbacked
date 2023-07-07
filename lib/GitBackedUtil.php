@@ -1,5 +1,7 @@
 <?php
 
+namespace woolfg\dokuwiki\plugin\gitbacked;
+
 /*
  * GitBackedUtil.php
  *
@@ -12,7 +14,8 @@
  * @repo       https://github.com/woolfg/dokuwiki-plugin-gitbacked
  */
 
-if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
+// must be run within Dokuwiki
+if (!defined('DOKU_INC')) die();
 
 // ------------------------------------------------------------------------
 
@@ -46,20 +49,20 @@ class GitBackedUtil {
 
         $iswin = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' || !empty($GLOBALS['DOKU_UNITTEST_ASSUME_WINDOWS']));
         // check for the (indestructable) root of the path - keeps windows stuff intact
-        if($path[0] == '/') {
+        if ($path[0] == '/') {
             $ret = true;
-        } else if($iswin) {
+        } else if ($iswin) {
             // match drive letter and UNC paths
-            if(preg_match('!^([a-zA-z]:)(.*)!',$path,$match)) {
+            if (preg_match('!^([a-zA-z]:)(.*)!', $path, $match)) {
                 $ret = true;
-            } else if(preg_match('!^(\\\\\\\\[^\\\\/]+\\\\[^\\\\/]+[\\\\/])(.*)!',$path,$match)) {
+            } else if (preg_match('!^(\\\\\\\\[^\\\\/]+\\\\[^\\\\/]+[\\\\/])(.*)!', $path, $match)) {
                 $ret = true;
             }
         }
 
         return $ret;
     }
-    
+
     /**
      * Returns the $path as is, if it is an absolute path.
      * Otherwise it will prepend the base path appropriate
@@ -71,14 +74,14 @@ class GitBackedUtil {
      */
     public static function getEffectivePath($path) {
         $ret = $path;
-        
+
         if (self::isAbsolutePath($ret)) {
             return $ret;
         }
         if (defined('DOKU_FARM')) {
-            $ret = DOKU_CONF.'../'.$ret;
+            $ret = DOKU_CONF . '../' . $ret;
         } else {
-            $ret = DOKU_INC.$ret;
+            $ret = DOKU_INC . $ret;
         }
         return $ret;
     }
@@ -93,7 +96,7 @@ class GitBackedUtil {
     public static function getTempDir() {
         if (empty(self::$temp_dir)) {
             global $conf;
-            self::$temp_dir = $conf['tmpdir'].'/gitbacked';
+            self::$temp_dir = $conf['tmpdir'] . '/gitbacked';
             io_mkdir_p(self::$temp_dir);
         }
         return self::$temp_dir;
@@ -115,6 +118,59 @@ class GitBackedUtil {
         }
         fclose($handle);
         return $tmpfname;
+    }
+
+    /**
+     * Determine closest git repository path for a given path as absolute PHP realpath().
+     * This search starts in $path - if $path does not contain .git,
+     * it will iterate the directories upwards as long as it finds a directory
+     * containing a .git folder.
+     *
+     * @access  public
+     * @return  string  the next git repo root dir as absolute PHP realpath()
+     *                  or empty string, if no git repo found.
+     */
+    public static function getClosestAbsoluteRepoPath($path) {
+        $descriptorspec = array(
+            1 => array('pipe', 'w'),
+            2 => array('pipe', 'w'),
+        );
+        $ret = '';
+        $pipes = array();
+        // Using --git-dir rather than --absolute-git-dir for a wider git versions compatibility
+        //$command = Git::get_bin()." rev-parse --absolute-git-dir";
+        $command = Git::get_bin() . " rev-parse --git-dir";
+        //dbglog("GitBacked - Command: ".$command);
+        $resource = proc_open($command, $descriptorspec, $pipes, $path);
+        $stdout = stream_get_contents($pipes[1]);
+        $stderr = stream_get_contents($pipes[2]);
+        foreach ($pipes as $pipe) {
+            fclose($pipe);
+        }
+
+        $status = trim(proc_close($resource));
+        if ($status == 0) {
+            $repo_git_dir = trim($stdout);
+            //dbglog("GitBacked - $command: '".$repo_git_dir."'");
+            if (!empty($repo_git_dir)) {
+                if (strcmp($repo_git_dir, ".git") === 0) {
+                    // convert to absolute path based on this command execution directory
+                    $repo_git_dir = $path . '/' . $repo_git_dir;
+                }
+                $repo_path = dirname(realpath($repo_git_dir));
+                $doku_inc_path = dirname(realpath(DOKU_INC));
+                if (strlen($repo_path) < strlen($doku_inc_path)) {
+                    // This code should never be reached!
+                    // If we get here, then we are beyond DOKU_INC - so this not supposed to be for us!
+                    return '';
+                }
+                //dbglog('GitBacked - $repo_path: '.$repo_path);
+                if (file_exists($repo_path . "/.git") && is_dir($repo_path . "/.git")) {
+                    return $repo_path;
+                }
+            }
+        }
+        return '';
     }
 
 }

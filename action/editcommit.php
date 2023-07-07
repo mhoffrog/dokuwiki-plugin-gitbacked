@@ -13,16 +13,30 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
-require_once dirname(__FILE__).'/../lib/Git.php';
-require_once dirname(__FILE__).'/../lib/GitBackedUtil.php';
+require_once __DIR__ . '/../loader.php';
 
-class action_plugin_gitbacked_editcommit extends DokuWiki_Action_Plugin {
+use dokuwiki\Extension\ActionPlugin;
+use dokuwiki\Extension\EventHandler;
+use dokuwiki\Extension\Event;
+
+use woolfg\dokuwiki\plugin\gitbacked\Git;
+use woolfg\dokuwiki\plugin\gitbacked\GitRepo;
+use woolfg\dokuwiki\plugin\gitbacked\GitBackedUtil;
+
+class action_plugin_gitbacked_editcommit extends ActionPlugin {
+
+	/**
+	 * Temporary directory for this gitbacked plugin.
+	 *
+	 * @var string
+	 */
+	private $temp_dir;
 
     function __construct() {
         $this->temp_dir = GitBackedUtil::getTempDir();
     }
 
-    public function register(Doku_Event_Handler $controller) {
+    public function register(EventHandler $controller) {
 
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handle_io_wikipage_write');
         $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handle_media_upload');
@@ -127,7 +141,7 @@ class action_plugin_gitbacked_editcommit extends DokuWiki_Action_Plugin {
 
 	}
 	
-    public function handle_periodic_pull(Doku_Event &$event, $param) {
+    public function handle_periodic_pull(Event &$event, $param) {
         if ($this->getConf('periodicPull')) {
 			$enableIndexUpdate = $this->getConf('updateIndexOnPull');
             $lastPullFile = $this->temp_dir.'/lastpull.txt';
@@ -203,7 +217,7 @@ class action_plugin_gitbacked_editcommit extends DokuWiki_Action_Plugin {
         }
     }
 
-    public function handle_media_deletion(Doku_Event &$event, $param) {
+    public function handle_media_deletion(Event &$event, $param) {
         $mediaPath = $event->data['path'];
         $mediaName = $event->data['name'];
 
@@ -217,7 +231,7 @@ class action_plugin_gitbacked_editcommit extends DokuWiki_Action_Plugin {
 
     }
 
-    public function handle_media_upload(Doku_Event &$event, $param) {
+    public function handle_media_upload(Event &$event, $param) {
 
         $mediaPath = $event->data[1];
         $mediaName = $event->data[2];
@@ -232,7 +246,7 @@ class action_plugin_gitbacked_editcommit extends DokuWiki_Action_Plugin {
 
     }
 
-    public function handle_io_wikipage_write(Doku_Event &$event, $param) {
+    public function handle_io_wikipage_write(Event &$event, $param) {
 
         $rev = $event->data[3];
 
