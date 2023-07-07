@@ -1,5 +1,7 @@
 <?php
 
+namespace woolfg\dokuwiki\plugin\gitbacked;
+
 /*
  * Git.php
  *
