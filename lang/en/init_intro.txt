@@ -1,0 +1,5 @@
+====== Git Repository Initialisierung  ======
+
+Auf dieser Seite können Sie das lokale Git Repository für die DkuWiki Texte und Mediendateien initialisieren.
+
+Bitte geben Sie die URL für das Repository auf Ihrem Git Server in das Formular ein.

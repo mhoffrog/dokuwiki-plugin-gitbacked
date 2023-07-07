@@ -4,3 +4,5 @@ $lang['mail_create_new_error_subject'] = 'gitbacked plugin: FEHLER beim Anlegen 
 $lang['mail_repo_path_error_subject'] = 'gitbacked plugin: Ein FEHLER mit dem konfigurierten Pfad zum Git Repository ist aufgetreten';
 $lang['mail_command_error_subject'] = 'gitbacked plugin: Ein Git Befehl ist FEHLGESCHLAGEN';
 $lang['mail_command_success_subject'] = 'gitbacked plugin: Ein Git Befehl wurde ausgeführt';
+$lang['menu'] = 'Git Repository initialisieren';
+$lang['repo_configured'] = 'Es ist bereits ein Git Repository konfiguriert!';
