@@ -1,0 +1,24 @@
+## Setup - from scratch (without using )
+:point_up: You should use this setup only, if your DokuWiki does not have any gitbacked repo configuration yet.<br>
+
+1. If not yet existing, create a blank private remote repo e.g. on GitHub
+2. We recommend to create an appropriate personal access token with commit privileges for your remote repo<br>
+   This personal access token will simplify the authentication configuration and will be referenced further down by `<ACCESS_TOKEN>`
+3. Initialize git repo within `<DOKUWIKI_ROOT>/data/pages`:<br>
+   (If something fails, then remove subdir `.git` with command `rm -rf .git` and perform the steps again.)
+   - `cd <DOKUWIKI_ROOT>/data/pages`
+   - `git init -b dokuwiki/pages`
+   - `git config --local core.autocrlf false`
+   - `git add .`
+   - `git commit -m "Initial commit"
+   - `git remote add origin https://<GITHUB_ACCOUNT>:<ACCESS_TOKEN>@github.com/<GITHUB_ACCOUNT>/<REMOTE_REPO>.git`
+   - `git push -u origin HEAD`
+4. Initialize git repo within `<DOKUWIKI_ROOT>/data/media`:
+   - `cd <DOKUWIKI_ROOT>/data/media`
+   - `git init -b dokuwiki/media`
+   - `git config --local core.autocrlf false`
+   - `git add .`
+   - `git commit -m "Initial commit"
+   - `git remote add origin https://<GITHUB_ACCOUNT>:<ACCESS_TOKEN>@github.com/<GITHUB_ACCOUNT>/<REMOTE_REPO>.git`
+   - `git push -u origin HEAD`
+5. Enable pushing in your gitbacked plugin configuration

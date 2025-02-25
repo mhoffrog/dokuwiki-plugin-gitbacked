@@ -5,3 +5,4 @@ $lang['mail_repo_path_error_subject'] = 'gitbacked plugin: A FAILURE with the Gi
 $lang['mail_command_error_subject'] = 'gitbacked plugin: A Git command FAILED';
 $lang['mail_command_success_subject'] = 'gitbacked plugin: A Git command was performed';
 $lang['menu'] = 'Initialize Git repositories';
+$lang['repo_configured'] = 'A Git repository path is already configured!';

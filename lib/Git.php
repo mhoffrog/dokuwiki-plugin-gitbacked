@@ -14,6 +14,8 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
  * @repo       http://github.com/kbjr/Git.php
  */
 
+use \Exception;
+
 if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
 
 // ------------------------------------------------------------------------
@@ -324,14 +326,15 @@ class GitRepo {
 		foreach ($pipes as $pipe) {
 			fclose($pipe);
 		}
+		dbglog("GitBacked: run_command stdout: [".$stdout."]");
 
 		$status = trim(proc_close($resource));
 		//dbglog("GitBacked: run_command status: ".$status);
 		if ($status) {
-			//dbglog("GitBacked - stderr: [".$stderr."]");
+			dbglog("GitBacked - stderr: [".$stderr."]");
 			// Remove a probable password from the Git URL, if the URL is contained in the error message
 			$error_message = preg_replace($this::REGEX_GIT_URL_FILTER_PWD, $this::REGEX_GIT_URL_FILTER_PWD_REPLACE_PATTERN, $stderr);
-			//dbglog("GitBacked - error_message: [".$error_message."]");
+			dbglog("GitBacked - error_message: [".$error_message."]");
 			throw new Exception($this->handle_command_error($this->repo_path, $cwd, $command, $status, $error_message));
 		} else {
 			$this->handle_command_success($this->repo_path, $cwd, $command);

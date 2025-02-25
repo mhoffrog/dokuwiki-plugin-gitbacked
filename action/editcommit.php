@@ -13,6 +13,7 @@ if (!defined('DOKU_LF')) define('DOKU_LF', "\n");
 if (!defined('DOKU_TAB')) define('DOKU_TAB', "\t");
 if (!defined('DOKU_PLUGIN')) define('DOKU_PLUGIN',DOKU_INC.'lib/plugins/');
 
+// Register auto loading of this plugins namespace classes
 require_once __DIR__ . '/../loader.php';
 
 use dokuwiki\Extension\ActionPlugin;
