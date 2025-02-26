@@ -172,6 +172,5 @@ class GitBackedUtil {
         }
         return '';
     }
-
 }
 /* End of file */
