@@ -9,12 +9,12 @@
  * @param string $class The fully-qualified class name.
  * @return void
  */
-spl_autoload_register(function($class) {
+spl_autoload_register(function ($class) {
     $namespaces = array(
         'woolfg\\dokuwiki\\plugin\\gitbacked\\' => __DIR__ . '/lib/'
     );
 
-    foreach($namespaces as $prefix => $base_dir) {
+    foreach ($namespaces as $prefix => $base_dir) {
         // does the class use the namespace prefix?
         $len = strlen($prefix);
         if (strncmp($prefix, $class, $len) !== 0) {
