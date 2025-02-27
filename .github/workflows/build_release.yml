@@ -48,7 +48,7 @@ jobs:
       APP_INFO_FILE: plugin.info.txt
       APP_INFO_FILE_VERSION_KEY: date
       BUILD_DIR: build
-      ZIP_EXCLUSIONS: '*.git* .editorconfig /*.github/* /*build/* RELEASE_HEAD.md'
+      ZIP_EXCLUSIONS: '*.git* .editorconfig /*.github/* /*build/* /*_test/* RELEASE_HEAD.md'
     
     steps:
       # Log use case if triggered manually

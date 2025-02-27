@@ -8,6 +8,7 @@
 
     <!-- for now we mix declarations and execution here (mostly for defines) -->
     <rule ref="PSR1.Files.SideEffects">
+        <!-- example from original DW repo:
         <exclude-pattern>*/index.php</exclude-pattern>
         <exclude-pattern>*/inc/parserutils.php</exclude-pattern>
         <exclude-pattern>*/inc/mail.php</exclude-pattern>
@@ -24,6 +25,7 @@
         <exclude-pattern>*/inc/load.php</exclude-pattern>
         <exclude-pattern>*/bin/*.php</exclude-pattern>
         <exclude-pattern>*/lib/exe/*.php</exclude-pattern>
+        -->
     </rule>
 
 </ruleset>
