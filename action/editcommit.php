@@ -7,6 +7,7 @@
  * @author  Wolfgang Gassler <wolfgang@gassler.org>
  */
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
@@ -24,8 +25,9 @@ use woolfg\dokuwiki\plugin\gitbacked\Git;
 use woolfg\dokuwiki\plugin\gitbacked\GitRepo;
 use woolfg\dokuwiki\plugin\gitbacked\GitBackedUtil;
 
+// phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
+// phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
 class action_plugin_gitbacked_editcommit extends ActionPlugin {
-
     /**
      * Temporary directory for this gitbacked plugin.
      *
@@ -33,12 +35,11 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      */
     private $temp_dir;
 
-    function __construct() {
+    public function __construct() {
         $this->temp_dir = GitBackedUtil::getTempDir();
     }
 
     public function register(EventHandler $controller) {
-
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handle_io_wikipage_write');
         $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handle_media_upload');
         $controller->register_hook('MEDIA_DELETE_FILE', 'AFTER', $this, 'handle_media_deletion');
@@ -60,7 +61,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         if (!empty($repoWorkDir)) {
             $repoWorkDir = GitBackedUtil::getEffectivePath($repoWorkDir);
         }
-        Git::set_bin(empty($repoWorkDir) ? Git::get_bin() : Git::get_bin() . ' --work-tree ' . escapeshellarg($repoWorkDir));
+        Git::set_bin(empty($repoWorkDir) ? Git::get_bin()
+            : Git::get_bin() . ' --work-tree ' . escapeshellarg($repoWorkDir));
         $params = str_replace(
             array('%mail%', '%user%'),
             array($this->getAuthorMail(), $this->getAuthor()),
@@ -155,11 +157,9 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
             $timeToWait = $this->getConf('periodicMinutes') * 60;
             $now = time();
 
-
             //if it is time to run a pull request
             if ($lastPull + $timeToWait < $now) {
                 try {
-
                     $repo = $this->initRepo();
                     if ($enableIndexUpdate) {
                         $localPath = $this->computeLocalPath();
@@ -184,8 +184,9 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
                                 // check if the file is inside localPath, that is, it's a page
                                 if (substr($cf, 0, strlen($localPath)) === $localPath) {
                                     // convert from relative filename to page name
-                                    // for example:	local/path/dir/subdir/test.txt -> dir:subdir:test
-                                    $page =  str_replace('/', ':', substr($cf, strlen($localPath) + 1, -4)); // -4 removes .txt
+                                    // for example: local/path/dir/subdir/test.txt -> dir:subdir:test
+                                    // -4 removes .txt
+                                    $page = str_replace('/', ':', substr($cf, strlen($localPath) + 1, -4));
 
                                     // update the page
                                     $this->updatePage($page);
@@ -244,7 +245,6 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
          * and once to write the new version of the page into the wiki (rev is false)
          */
         if (!$rev) {
-
             $pagePath = $event->data[0][0];
             $pageName = $event->data[2];
             $pageContent = $event->data[0][1];
@@ -366,7 +366,9 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      */
     public function notifyByMail($subject_id, $template_id, $template_replacements) {
         $ret = false;
-        //dbglog("GitBacked - notifyByMail: [subject_id=".$subject_id.", template_id=".$template_id.", template_replacements=".$template_replacements."]");
+        //dbglog("GitBacked - notifyByMail: [subject_id=" . $subject_id
+        //    . ", template_id=" . $template_id
+        //    . ", template_replacements=" . $template_replacements . "]");
         if (!$this->isNotifyByEmailOnGitCommandError()) {
             return $ret;
         }
@@ -409,5 +411,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         return $emailAddressOnError;
     }
 }
+// phpcs:enable Squiz.Classes.ValidClassName.NotCamelCaps
+// phpcs:enable PSR1.Classes.ClassDeclaration.MissingNamespace
 
 // vim:ts=4:sw=4:et:

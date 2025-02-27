@@ -14,6 +14,7 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
  * @repo       https://github.com/woolfg/dokuwiki-plugin-gitbacked
  */
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
@@ -27,7 +28,6 @@ if (!defined('DOKU_INC')) die();
  * @class  GitBackedUtil
  */
 class GitBackedUtil {
-
     /**
      * GitBacked temp directory
      *
@@ -51,11 +51,11 @@ class GitBackedUtil {
         // check for the (indestructable) root of the path - keeps windows stuff intact
         if ($path[0] == '/') {
             $ret = true;
-        } else if ($iswin) {
+        } elseif ($iswin) {
             // match drive letter and UNC paths
             if (preg_match('!^([a-zA-z]:)(.*)!', $path, $match)) {
                 $ret = true;
-            } else if (preg_match('!^(\\\\\\\\[^\\\\/]+\\\\[^\\\\/]+[\\\\/])(.*)!', $path, $match)) {
+            } elseif (preg_match('!^(\\\\\\\\[^\\\\/]+\\\\[^\\\\/]+[\\\\/])(.*)!', $path, $match)) {
                 $ret = true;
             }
         }
@@ -70,7 +70,7 @@ class GitBackedUtil {
      *
      * @access  public
      * @param   string $path    a file path name
-     * @return  string          an appropriate absolute path 
+     * @return  string          an appropriate absolute path
      */
     public static function getEffectivePath($path) {
         $ret = $path;

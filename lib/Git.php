@@ -14,6 +14,7 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
  * @repo       http://github.com/kbjr/Git.php
  */
 
+// phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
 
 // ------------------------------------------------------------------------
@@ -27,7 +28,6 @@ if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
  * @class  Git
  */
 class Git {
-
     /**
      * Git executable location
      *
@@ -100,7 +100,12 @@ class Git {
      * @param   \action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      **/
-    public static function &clone_remote($repo_path, $remote, $reference = null, \action_plugin_gitbacked_editcommit $plugin = null) {
+    public static function &clone_remote(
+        $repo_path,
+        $remote,
+        $reference = null,
+        \action_plugin_gitbacked_editcommit $plugin = null
+    ) {
         return GitRepo::create_new($repo_path, $plugin, $remote, true, $reference);
     }
 
@@ -118,8 +123,6 @@ class Git {
     }
 }
 
-// ------------------------------------------------------------------------
-
 /**
  * Git Repository Interface Class
  *
@@ -129,12 +132,11 @@ class Git {
  * @class  GitRepo
  */
 class GitRepo {
-
     // This regex will filter a probable password from any string containing a Git URL.
     // Limitation: it will work for the first git URL occurrence in a string.
     // Used https://regex101.com/ for evaluating!
-    const REGEX_GIT_URL_FILTER_PWD = "/^(.*)((http:)|(https:))([^:]+)(:[^@]*)?(.*)/im";
-    const REGEX_GIT_URL_FILTER_PWD_REPLACE_PATTERN = "$1$2$5$7";
+    public const REGEX_GIT_URL_FILTER_PWD = "/^(.*)((http:)|(https:))([^:]+)(:[^@]*)?(.*)/im";
+    public const REGEX_GIT_URL_FILTER_PWD_REPLACE_PATTERN = "$1$2$5$7";
 
     protected $repo_path = null;
     protected $bare = false;
@@ -155,16 +157,32 @@ class GitRepo {
      * @param   string  reference path
      * @return  GitRepo  or null in case of an error
      */
-    public static function &create_new($repo_path, \action_plugin_gitbacked_editcommit $plugin = null, $source = null, $remote_source = false, $reference = null) {
+    public static function &create_new(
+        $repo_path,
+        \action_plugin_gitbacked_editcommit $plugin = null,
+        $source = null,
+        $remote_source = false,
+        $reference = null
+    ) {
         if (is_dir($repo_path) && file_exists($repo_path . "/.git") && is_dir($repo_path . "/.git")) {
-            throw new Exception(self::handle_create_new_error($repo_path, $reference, '"' . $repo_path . '" is already a git repository', $plugin));
+            throw new \Exception(self::handle_create_new_error(
+                $repo_path,
+                $reference,
+                '"' . $repo_path . '" is already a git repository',
+                $plugin
+            ));
         } else {
             $repo = new self($repo_path, $plugin, true, false);
             if (is_string($source)) {
                 if ($remote_source) {
                     if (!is_dir($reference) || !is_dir($reference . '/.git')) {
-                        throw new Exception(self::handle_create_new_error($repo_path, $reference, '"' . $reference . '" is not a git repository. Cannot use as reference.', $plugin));
-                    } else if (strlen($reference)) {
+                        throw new \Exception(self::handle_create_new_error(
+                            $repo_path,
+                            $reference,
+                            '"' . $reference . '" is not a git repository. Cannot use as reference.',
+                            $plugin
+                        ));
+                    } elseif (strlen($reference)) {
                         $reference = realpath($reference);
                         $reference = "--reference $reference";
                     }
@@ -190,7 +208,12 @@ class GitRepo {
      * @param   bool    create if not exists?
      * @return  void
      */
-    public function __construct($repo_path = null, \action_plugin_gitbacked_editcommit $plugin = null, $create_new = false, $_init = true) {
+    public function __construct(
+        $repo_path = null,
+        \action_plugin_gitbacked_editcommit $plugin = null,
+        $create_new = false,
+        $_init = true
+    ) {
         $this->plugin = $plugin;
         if (is_string($repo_path)) {
             $this->set_repo_path($repo_path, $create_new, $_init);
@@ -218,7 +241,7 @@ class GitRepo {
                         $this->repo_path = $repo_path;
                         $this->bare = false;
                         // Is this a bare repo?
-                    } else if (is_file($repo_path . "/config")) {
+                    } elseif (is_file($repo_path . "/config")) {
                         $parse_ini = parse_ini_file($repo_path . "/config");
                         if ($parse_ini['bare']) {
                             $this->repo_path = $repo_path;
@@ -231,11 +254,17 @@ class GitRepo {
                                 $this->run('init');
                             }
                         } else {
-                            throw new Exception($this->handle_repo_path_error($repo_path, '"' . $repo_path . '" is not a git repository'));
+                            throw new \Exception($this->handle_repo_path_error(
+                                $repo_path,
+                                '"' . $repo_path . '" is not a git repository'
+                            ));
                         }
                     }
                 } else {
-                    throw new Exception($this->handle_repo_path_error($repo_path, '"' . $repo_path . '" is not a directory'));
+                    throw new \Exception($this->handle_repo_path_error(
+                        $repo_path,
+                        '"' . $repo_path . '" is not a directory'
+                    ));
                 }
             } else {
                 if ($create_new) {
@@ -244,10 +273,16 @@ class GitRepo {
                         $this->repo_path = $repo_path;
                         if ($_init) $this->run('init');
                     } else {
-                        throw new Exception($this->handle_repo_path_error($repo_path, 'cannot create repository in non-existent directory'));
+                        throw new \Exception($this->handle_repo_path_error(
+                            $repo_path,
+                            'cannot create repository in non-existent directory'
+                        ));
                     }
                 } else {
-                    throw new Exception($this->handle_repo_path_error($repo_path, '"' . $repo_path . '" does not exist'));
+                    throw new \Exception($this->handle_repo_path_error(
+                        $repo_path,
+                        '"' . $repo_path . '" does not exist'
+                    ));
                 }
             }
         }
@@ -255,7 +290,7 @@ class GitRepo {
 
     /**
      * Get the path to the git repo directory (eg. the ".git" directory)
-     * 
+     *
      * @access public
      * @return string
      */
@@ -306,13 +341,13 @@ class GitRepo {
         $cwd = $this->repo_path;
         //dbglog("GitBacked - cwd: [".$cwd."]");
         /* Provide any $this->envopts via putenv
-		 * and call proc_open with env=null to inherit the rest
-		 * of env variables from the original process of the system.
-		 * Note: Variables set by putenv live for a
-		 * single PHP request run only. These variables
-		 * are visible "locally". They are NOT listed by getenv(),
-		 * but they are visible to the process forked by proc_open().
-		 */
+         * and call proc_open with env=null to inherit the rest
+         * of env variables from the original process of the system.
+         * Note: Variables set by putenv live for a
+         * single PHP request run only. These variables
+         * are visible "locally". They are NOT listed by getenv(),
+         * but they are visible to the process forked by proc_open().
+         */
         foreach ($this->envopts as $k => $v) {
             putenv(sprintf("%s=%s", $k, $v));
         }
@@ -329,9 +364,19 @@ class GitRepo {
         if ($status) {
             //dbglog("GitBacked - stderr: [".$stderr."]");
             // Remove a probable password from the Git URL, if the URL is contained in the error message
-            $error_message = preg_replace($this::REGEX_GIT_URL_FILTER_PWD, $this::REGEX_GIT_URL_FILTER_PWD_REPLACE_PATTERN, $stderr);
+            $error_message = preg_replace(
+                $this::REGEX_GIT_URL_FILTER_PWD,
+                $this::REGEX_GIT_URL_FILTER_PWD_REPLACE_PATTERN,
+                $stderr
+            );
             //dbglog("GitBacked - error_message: [".$error_message."]");
-            throw new Exception($this->handle_command_error($this->repo_path, $cwd, $command, $status, $error_message));
+            throw new \Exception($this->handle_command_error(
+                $this->repo_path,
+                $cwd,
+                $command,
+                $status,
+                $error_message
+            ));
         } else {
             $this->handle_command_success($this->repo_path, $cwd, $command);
         }
@@ -691,9 +736,9 @@ class GitRepo {
      *
      * Optionally, accept a shell wildcard pattern and return only tags matching it.
      *
-     * @access	public
-     * @param	string	$pattern	Shell wildcard pattern to match tags against.
-     * @return	array				Available repository tags.
+     * @access  public
+     * @param   string $pattern Shell wildcard pattern to match tags against.
+     * @return  array           Available repository tags.
      */
     public function list_tags($pattern = null) {
         $tagArray = explode("\n", $this->run("tag -l $pattern"));
@@ -740,10 +785,11 @@ class GitRepo {
      * @return string
      */
     public function log($format = null) {
-        if ($format === null)
+        if ($format === null) {
             return $this->run('log');
-        else
+        } else {
             return $this->run('log --pretty=format:"' . $format . '"');
+        }
     }
 
     /**
