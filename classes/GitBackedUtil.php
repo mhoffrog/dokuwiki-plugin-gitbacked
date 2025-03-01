@@ -144,8 +144,8 @@ class GitBackedUtil
         $ret = '';
         $pipes = array();
         // Using --git-dir rather than --absolute-git-dir for a wider git versions compatibility
-        //$command = Git::get_bin()." rev-parse --absolute-git-dir";
-        $command = Git::get_bin() . " rev-parse --git-dir";
+        //$command = Git::getBin()." rev-parse --absolute-git-dir";
+        $command = Git::getBin() . " rev-parse --git-dir";
         //dbglog("GitBacked - Command: ".$command);
         $resource = proc_open($command, $descriptorspec, $pipes, $path);
         $stdout = stream_get_contents($pipes[1]);

@@ -41,7 +41,7 @@ class Git
      *
      * @param string $path executable location
      */
-    public static function set_bin($path)
+    public static function setBin($path)
     {
         self::$bin = $path;
     }
@@ -49,7 +49,7 @@ class Git
     /**
      * Gets git executable path
      */
-    public static function get_bin()
+    public static function getBin()
     {
         return self::$bin;
     }
@@ -57,9 +57,9 @@ class Git
     /**
      * Sets up library for use in a default Windows environment
      */
-    public static function windows_mode()
+    public static function windowsMode()
     {
-        self::set_bin('git');
+        self::setBin('git');
     }
 
     /**
@@ -75,7 +75,7 @@ class Git
      */
     public static function &create($repo_path, $source = null, \action_plugin_gitbacked_editcommit $plugin = null)
     {
-        return GitRepo::create_new($repo_path, $source, $plugin);
+        return GitRepo::createNew($repo_path, $source, $plugin);
     }
 
     /**
@@ -106,13 +106,13 @@ class Git
      * @param   \action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      **/
-    public static function &clone_remote(
+    public static function &cloneRemote(
         $repo_path,
         $remote,
         $reference = null,
         \action_plugin_gitbacked_editcommit $plugin = null
     ) {
-        return GitRepo::create_new($repo_path, $plugin, $remote, true, $reference);
+        return GitRepo::createNew($repo_path, $plugin, $remote, true, $reference);
     }
 
     /**
@@ -124,7 +124,7 @@ class Git
      * @param   mixed   variable
      * @return  bool
      */
-    public static function is_repo($var)
+    public static function isRepo($var)
     {
         return ($var instanceof GitRepo);
     }

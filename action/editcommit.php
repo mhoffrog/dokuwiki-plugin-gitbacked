@@ -43,10 +43,10 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
 
     public function register(EventHandler $controller)
     {
-        $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handle_io_wikipage_write');
-        $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handle_media_upload');
-        $controller->register_hook('MEDIA_DELETE_FILE', 'AFTER', $this, 'handle_media_deletion');
-        $controller->register_hook('DOKUWIKI_DONE', 'AFTER', $this, 'handle_periodic_pull');
+        $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handleIOWikiPageWrite');
+        $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handleMediaUpload');
+        $controller->register_hook('MEDIA_DELETE_FILE', 'AFTER', $this, 'handleMediaDeletion');
+        $controller->register_hook('DOKUWIKI_DONE', 'AFTER', $this, 'handlePeriodicPull');
     }
 
     private function initRepo()
@@ -55,7 +55,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         $repoPath = GitBackedUtil::getEffectivePath($this->getConf('repoPath'));
         $gitPath = trim($this->getConf('gitPath'));
         if ($gitPath !== '') {
-            Git::set_bin($gitPath);
+            Git::setBin($gitPath);
         }
         //init the repo and create a new one if it is not present
         io_mkdir_p($repoPath);
@@ -65,15 +65,15 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         if (!empty($repoWorkDir)) {
             $repoWorkDir = GitBackedUtil::getEffectivePath($repoWorkDir);
         }
-        Git::set_bin(empty($repoWorkDir) ? Git::get_bin()
-            : Git::get_bin() . ' --work-tree ' . escapeshellarg($repoWorkDir));
+        Git::setBin(empty($repoWorkDir) ? Git::getBin()
+            : Git::getBin() . ' --work-tree ' . escapeshellarg($repoWorkDir));
         $params = str_replace(
             array('%mail%', '%user%'),
             array($this->getAuthorMail(), $this->getAuthor()),
             $this->getConf('addParams')
         );
         if ($params) {
-            Git::set_bin(Git::get_bin() . ' ' . $params);
+            Git::setBin(Git::getBin() . ' ' . $params);
         }
         return $repo;
     }
@@ -105,7 +105,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
 
                 //if the push after Commit option is set we push the active branch to origin
                 if ($this->getConf('pushAfterCommit')) {
-                    $repo->push('origin', $repo->active_branch());
+                    $repo->push('origin', $repo->activeBranch());
                 }
             } catch (Exception $e) {
                 if (!$this->isNotifyByEmailOnGitCommandError()) {
@@ -153,7 +153,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         echo "Update $page: $success <br/>";
     }
 
-    public function handle_periodic_pull(Event &$event, $param)
+    public function handlePeriodicPull(Event &$event, $param)
     {
         if ($this->getConf('periodicPull')) {
             $enableIndexUpdate = $this->getConf('updateIndexOnPull');
@@ -180,7 +180,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
                     }
 
                     //execute the pull request
-                    $repo->pull('origin', $repo->active_branch());
+                    $repo->pull('origin', $repo->activeBranch());
 
                     if ($enableIndexUpdate) {
                         // store new revision id
@@ -220,7 +220,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         }
     }
 
-    public function handle_media_deletion(Event &$event, $param)
+    public function handleMediaDeletion(Event &$event, $param)
     {
         $mediaPath = $event->data['path'];
         $mediaName = $event->data['name'];
@@ -234,7 +234,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         $this->commitFile($mediaPath, $message);
     }
 
-    public function handle_media_upload(Event &$event, $param)
+    public function handleMediaUpload(Event &$event, $param)
     {
 
         $mediaPath = $event->data[1];
@@ -249,7 +249,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         $this->commitFile($mediaPath, $message);
     }
 
-    public function handle_io_wikipage_write(Event &$event, $param)
+    public function handleIOWikiPageWrite(Event &$event, $param)
     {
 
         $rev = $event->data[3];
@@ -301,7 +301,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notify_create_new_error($repo_path, $reference, $error_message)
+    public function notifyCreateNewError($repo_path, $reference, $error_message)
     {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
@@ -319,7 +319,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notify_repo_path_error($repo_path, $error_message)
+    public function notifyRepoPathError($repo_path, $error_message)
     {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
@@ -339,7 +339,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notify_command_error($repo_path, $cwd, $command, $status, $error_message)
+    public function notifyCommandError($repo_path, $cwd, $command, $status, $error_message)
     {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
@@ -360,7 +360,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  command line
      * @return  bool
      */
-    public function notify_command_success($repo_path, $cwd, $command)
+    public function notifyCommandSuccess($repo_path, $cwd, $command)
     {
         if (!$this->getConf('notifyByMailOnSuccess')) {
             return false;
