@@ -12,7 +12,7 @@ spl_autoload_register(
      */
     function ($class) {
         $namespaces = array(
-            'woolfg\\dokuwiki\\plugin\\gitbacked\\' => __DIR__ . '/lib/'
+            'woolfg\\dokuwiki\\plugin\\gitbacked\\' => __DIR__ . '/classes/'
         );
 
         foreach ($namespaces as $prefix => $base_dir) {
