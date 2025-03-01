@@ -27,7 +27,8 @@ if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
  *
  * @class  Git
  */
-class Git {
+class Git
+{
     /**
      * Git executable location
      *
@@ -40,21 +41,24 @@ class Git {
      *
      * @param string $path executable location
      */
-    public static function set_bin($path) {
+    public static function set_bin($path)
+    {
         self::$bin = $path;
     }
 
     /**
      * Gets git executable path
      */
-    public static function get_bin() {
+    public static function get_bin()
+    {
         return self::$bin;
     }
 
     /**
      * Sets up library for use in a default Windows environment
      */
-    public static function windows_mode() {
+    public static function windows_mode()
+    {
         self::set_bin('git');
     }
 
@@ -69,7 +73,8 @@ class Git {
      * @param   \action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      */
-    public static function &create($repo_path, $source = null, \action_plugin_gitbacked_editcommit $plugin = null) {
+    public static function &create($repo_path, $source = null, \action_plugin_gitbacked_editcommit $plugin = null)
+    {
         return GitRepo::create_new($repo_path, $source, $plugin);
     }
 
@@ -83,7 +88,8 @@ class Git {
      * @param   \action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      */
-    public static function open($repo_path, \action_plugin_gitbacked_editcommit $plugin = null) {
+    public static function open($repo_path, \action_plugin_gitbacked_editcommit $plugin = null)
+    {
         return new GitRepo($repo_path, $plugin);
     }
 
@@ -118,7 +124,8 @@ class Git {
      * @param   mixed   variable
      * @return  bool
      */
-    public static function is_repo($var) {
+    public static function is_repo($var)
+    {
         return ($var instanceof GitRepo);
     }
 }
