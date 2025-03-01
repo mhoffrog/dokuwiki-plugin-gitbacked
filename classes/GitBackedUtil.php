@@ -27,7 +27,8 @@ if (!defined('DOKU_INC')) die();
  *
  * @class  GitBackedUtil
  */
-class GitBackedUtil {
+class GitBackedUtil
+{
     /**
      * GitBacked temp directory
      *
@@ -44,7 +45,8 @@ class GitBackedUtil {
      * @param   string $path    a file path name
      * @return  bool
      */
-    public static function isAbsolutePath($path) {
+    public static function isAbsolutePath($path)
+    {
         $ret = false;
 
         $iswin = (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN' || !empty($GLOBALS['DOKU_UNITTEST_ASSUME_WINDOWS']));
@@ -72,7 +74,8 @@ class GitBackedUtil {
      * @param   string $path    a file path name
      * @return  string          an appropriate absolute path
      */
-    public static function getEffectivePath($path) {
+    public static function getEffectivePath($path)
+    {
         $ret = $path;
 
         if (self::isAbsolutePath($ret)) {
@@ -93,7 +96,8 @@ class GitBackedUtil {
      * @access  public
      * @return  string          the gitbacked temp directory name
      */
-    public static function getTempDir() {
+    public static function getTempDir()
+    {
         if (empty(self::$temp_dir)) {
             global $conf;
             self::$temp_dir = $conf['tmpdir'] . '/gitbacked';
@@ -110,7 +114,8 @@ class GitBackedUtil {
      * @param   string $message the text message
      * @return  string          the temp filename created
      */
-    public static function createMessageFile($message) {
+    public static function createMessageFile($message)
+    {
         $tmpfname = tempnam(self::getTempDir(), 'gitMessage_');
         $handle = fopen($tmpfname, "w");
         if (!empty($message)) {
@@ -130,7 +135,8 @@ class GitBackedUtil {
      * @return  string  the next git repo root dir as absolute PHP realpath()
      *                  or empty string, if no git repo found.
      */
-    public static function getClosestAbsoluteRepoPath($path) {
+    public static function getClosestAbsoluteRepoPath($path)
+    {
         $descriptorspec = array(
             1 => array('pipe', 'w'),
             2 => array('pipe', 'w'),

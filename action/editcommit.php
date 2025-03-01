@@ -27,7 +27,8 @@ use woolfg\dokuwiki\plugin\gitbacked\GitBackedUtil;
 
 // phpcs:disable PSR1.Classes.ClassDeclaration.MissingNamespace
 // phpcs:disable Squiz.Classes.ValidClassName.NotCamelCaps
-class action_plugin_gitbacked_editcommit extends ActionPlugin {
+class action_plugin_gitbacked_editcommit extends ActionPlugin
+{
     /**
      * Temporary directory for this gitbacked plugin.
      *
@@ -35,18 +36,21 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      */
     private $temp_dir;
 
-    public function __construct() {
+    public function __construct()
+    {
         $this->temp_dir = GitBackedUtil::getTempDir();
     }
 
-    public function register(EventHandler $controller) {
+    public function register(EventHandler $controller)
+    {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handle_io_wikipage_write');
         $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handle_media_upload');
         $controller->register_hook('MEDIA_DELETE_FILE', 'AFTER', $this, 'handle_media_deletion');
         $controller->register_hook('DOKUWIKI_DONE', 'AFTER', $this, 'handle_periodic_pull');
     }
 
-    private function initRepo() {
+    private function initRepo()
+    {
         //get path to the repo root (by default DokuWiki's savedir)
         $repoPath = GitBackedUtil::getEffectivePath($this->getConf('repoPath'));
         $gitPath = trim($this->getConf('gitPath'));
@@ -74,7 +78,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         return $repo;
     }
 
-    private function isIgnored($filePath) {
+    private function isIgnored($filePath)
+    {
         $ignore = false;
         $ignorePaths = trim($this->getConf('ignorePaths'));
         if ($ignorePaths !== '') {
@@ -88,7 +93,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         return $ignore;
     }
 
-    private function commitFile($filePath, $message) {
+    private function commitFile($filePath, $message)
+    {
         if (!$this->isIgnored($filePath)) {
             try {
                 $repo = $this->initRepo();
@@ -110,15 +116,18 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         }
     }
 
-    private function getAuthor() {
+    private function getAuthor()
+    {
         return $GLOBALS['USERINFO']['name'];
     }
 
-    private function getAuthorMail() {
+    private function getAuthorMail()
+    {
         return $GLOBALS['USERINFO']['mail'];
     }
 
-    private function computeLocalPath() {
+    private function computeLocalPath()
+    {
         global $conf;
         $repoPath = str_replace('\\', '/', realpath(GitBackedUtil::getEffectivePath($this->getConf('repoPath'))));
         $datadir = $conf['datadir']; // already normalized
@@ -128,7 +137,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         return substr($datadir, strlen($repoPath) + 1);
     }
 
-    private function updatePage($page) {
+    private function updatePage($page)
+    {
 
         if (is_callable('\dokuwiki\Search\Indexer::getInstance')) {
             $Indexer = \dokuwiki\Search\Indexer::getInstance();
@@ -143,7 +153,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         echo "Update $page: $success <br/>";
     }
 
-    public function handle_periodic_pull(Event &$event, $param) {
+    public function handle_periodic_pull(Event &$event, $param)
+    {
         if ($this->getConf('periodicPull')) {
             $enableIndexUpdate = $this->getConf('updateIndexOnPull');
             $lastPullFile = $this->temp_dir . '/lastpull.txt';
@@ -209,7 +220,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         }
     }
 
-    public function handle_media_deletion(Event &$event, $param) {
+    public function handle_media_deletion(Event &$event, $param)
+    {
         $mediaPath = $event->data['path'];
         $mediaName = $event->data['name'];
 
@@ -222,7 +234,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         $this->commitFile($mediaPath, $message);
     }
 
-    public function handle_media_upload(Event &$event, $param) {
+    public function handle_media_upload(Event &$event, $param)
+    {
 
         $mediaPath = $event->data[1];
         $mediaName = $event->data[2];
@@ -236,7 +249,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
         $this->commitFile($mediaPath, $message);
     }
 
-    public function handle_io_wikipage_write(Event &$event, $param) {
+    public function handle_io_wikipage_write(Event &$event, $param)
+    {
 
         $rev = $event->data[3];
 
@@ -287,7 +301,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @param   string  error message
      * @return  bool
      */
-    public function notify_create_new_error($repo_path, $reference, $error_message) {
+    public function notify_create_new_error($repo_path, $reference, $error_message)
+    {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
             'GIT_REFERENCE' => (empty($reference) ? 'n/a' : $reference),
@@ -304,7 +319,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @param   string  error message
      * @return  bool
      */
-    public function notify_repo_path_error($repo_path, $error_message) {
+    public function notify_repo_path_error($repo_path, $error_message)
+    {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
             'GIT_ERROR_MESSAGE' => $error_message
@@ -323,7 +339,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @param   string  error message
      * @return  bool
      */
-    public function notify_command_error($repo_path, $cwd, $command, $status, $error_message) {
+    public function notify_command_error($repo_path, $cwd, $command, $status, $error_message)
+    {
         $template_replacements = array(
             'GIT_REPO_PATH' => $repo_path,
             'GIT_CWD' => $cwd,
@@ -343,7 +360,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @param   string  command line
      * @return  bool
      */
-    public function notify_command_success($repo_path, $cwd, $command) {
+    public function notify_command_success($repo_path, $cwd, $command)
+    {
         if (!$this->getConf('notifyByMailOnSuccess')) {
             return false;
         }
@@ -364,7 +382,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @param   array   array of replacements
      * @return  bool
      */
-    public function notifyByMail($subject_id, $template_id, $template_replacements) {
+    public function notifyByMail($subject_id, $template_id, $template_replacements)
+    {
         $ret = false;
         //dbglog("GitBacked - notifyByMail: [subject_id=" . $subject_id
         //    . ", template_id=" . $template_id
@@ -395,7 +414,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @access  public
      * @return  bool
      */
-    public function isNotifyByEmailOnGitCommandError() {
+    public function isNotifyByEmailOnGitCommandError()
+    {
         $emailAddressOnError = $this->getEmailAddressOnErrorConfigured();
         return !empty($emailAddressOnError);
     }
@@ -406,7 +426,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin {
      * @access  public
      * @return  string
      */
-    public function getEmailAddressOnErrorConfigured() {
+    public function getEmailAddressOnErrorConfigured()
+    {
         $emailAddressOnError = trim($this->getConf('emailAddressOnError'));
         return $emailAddressOnError;
     }
