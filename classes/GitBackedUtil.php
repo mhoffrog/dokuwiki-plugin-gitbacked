@@ -18,6 +18,8 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
 // must be run within Dokuwiki
 if (!defined('DOKU_INC')) die();
 
+use Mailer;
+
 // ------------------------------------------------------------------------
 
 /**
@@ -34,7 +36,14 @@ class GitBackedUtil
      *
      * @var string
      */
-    protected static $temp_dir = '';
+    private static $temp_dir = '';
+
+    /**
+     * GitBacked temp directory
+     *
+     * @var Mailer::class
+     */
+    private static $mailerClass = Mailer::class;
 
     /**
      * Checks, if a given path name is an absolute path or not.
@@ -45,7 +54,7 @@ class GitBackedUtil
      * @param   string $path    a file path name
      * @return  bool
      */
-    public static function isAbsolutePath($path)
+    public static function isAbsolutePath($path): string
     {
         $ret = false;
 
@@ -74,7 +83,7 @@ class GitBackedUtil
      * @param   string $path    a file path name
      * @return  string          an appropriate absolute path
      */
-    public static function getEffectivePath($path)
+    public static function getEffectivePath($path): string
     {
         $ret = $path;
 
@@ -94,7 +103,7 @@ class GitBackedUtil
      * @access  public
      * @return  string          the gitbacked temp directory name
      */
-    public static function getTempDir()
+    public static function getTempDir(): string
     {
         if (empty(self::$temp_dir)) {
             global $conf;
@@ -112,7 +121,7 @@ class GitBackedUtil
      * @param   string $message the text message
      * @return  string          the temp filename created
      */
-    public static function createMessageFile($message)
+    public static function createMessageFile($message): string
     {
         $tmpfname = tempnam(self::getTempDir(), 'gitMessage_');
         $handle = fopen($tmpfname, "w");
@@ -133,7 +142,7 @@ class GitBackedUtil
      * @return  string  the next git repo root dir as absolute PHP realpath()
      *                  or empty string, if no git repo found.
      */
-    public static function getClosestAbsoluteRepoPath($path)
+    public static function getClosestAbsoluteRepoPath($path): string
     {
         $descriptorspec = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $pipes = [];
@@ -171,6 +180,52 @@ class GitBackedUtil
             }
         }
         return '';
+    }
+
+    /**
+     * Checks, if runtime is unit testing.
+     *
+     * @access  public
+     * @return  bool
+     */
+    public static function isUnitTest(): bool
+    {
+        return defined('DOKU_UNITTEST');
+    }
+
+    /**
+     * Get Mailer class.
+     *
+     * @access  public
+     * @return  Mailer::class
+     */
+    public static function getMailerClass()
+    {
+        return self::$mailerClass;
+    }
+
+    /**
+     * Set Mailer class.
+     *
+     * @access  public
+     * @param   Mailer::class $mailerClass
+     * @return  void
+     */
+    public static function setMailerClass($mailerClass): void
+    {
+        self::$mailerClass = $mailerClass;
+    }
+
+    /**
+     * Checks, if runtime is unit testing.
+     *
+     * @access  public
+     * @return  Mailer
+     */
+    public static function newMailer(): Mailer
+    {
+        $mailerClass = self::getMailerClass();
+        return new $mailerClass();
     }
 }
 /* End of file */

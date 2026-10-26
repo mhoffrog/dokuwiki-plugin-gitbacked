@@ -32,26 +32,59 @@ use woolfg\dokuwiki\plugin\gitbacked\GitBackedUtil;
 class action_plugin_gitbacked_editcommit extends ActionPlugin
 {
     /**
+     * Singleton instance
+     *
+     * @var action_plugin_gitbacked_editcommit
+     */
+    private static $REGISTERED_INSTANCE;
+
+    /**
      * Temporary directory for this gitbacked plugin.
      *
      * @var string
      */
     private $temp_dir;
 
+    /**
+     * Get the instance that has been recently registered by EventHandler.
+     *
+     * @return action_plugin_gitbacked_editcommit|null
+     *
+     */
+    public static function getRegisteredInstance(): ?action_plugin_gitbacked_editcommit
+    {
+        return self::$REGISTERED_INSTANCE;
+    }
+
     public function __construct()
     {
         $this->temp_dir = GitBackedUtil::getTempDir();
     }
 
-    public function register(EventHandler $controller)
+    /**
+     * Called by DokuWiki plugin framework
+     *
+     * @param EventHandler $controller
+     *
+     * @return void
+     *
+     */
+    public function register(EventHandler $controller): void
     {
         $controller->register_hook('IO_WIKIPAGE_WRITE', 'AFTER', $this, 'handleIOWikiPageWrite');
         $controller->register_hook('MEDIA_UPLOAD_FINISH', 'AFTER', $this, 'handleMediaUpload');
         $controller->register_hook('MEDIA_DELETE_FILE', 'AFTER', $this, 'handleMediaDeletion');
         $controller->register_hook('DOKUWIKI_DONE', 'AFTER', $this, 'handlePeriodicPull');
+        self::$REGISTERED_INSTANCE = $this;
     }
 
-    private function initRepo()
+    /**
+     * Init repo if needed and Git::getBin() core command according to plugin config.
+     *
+     * @return GitRepo
+     *
+     */
+    public function initRepo(): GitRepo
     {
         //get path to the repo root (by default DokuWiki's savedir)
         $repoPath = GitBackedUtil::getEffectivePath($this->getConf('repoPath'));
@@ -80,7 +113,15 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         return $repo;
     }
 
-    private function isIgnored($filePath)
+    /**
+     * Check if $filePath is configured to be ignored.
+     *
+     * @param string $filePath
+     *
+     * @return bool
+     *
+     */
+    private function isIgnored($filePath): bool
     {
         $ignore = false;
         $ignorePaths = trim($this->getConf('ignorePaths'));
@@ -95,7 +136,16 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         return $ignore;
     }
 
-    private function commitFile($filePath, $message)
+    /**
+     * Commit $filePath with log message $message.
+     *
+     * @param string $filePath
+     * @param string $message
+     *
+     * @return void
+     *
+     */
+    private function commitFile($filePath, $message): void
     {
         if (!$this->isIgnored($filePath)) {
             $message = str_replace(
@@ -124,22 +174,42 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         }
     }
 
-    private function getUserInfo($key)
+    /**
+     * Return value from $GLOBALS['USERINFO'] by $key.
+     *
+     * @param string $key
+     *
+     * @return string value from $GLOBALS['USERINFO'] or empty string
+     *
+     */
+    private function getUserInfo($key): string
     {
         return $GLOBALS['USERINFO'][$key] ?? '';
     }
 
-    private function getAuthor()
+    /**
+     * Return current user name as commit author.
+     *
+     * @return string current user name or empty string
+     *
+     */
+    private function getAuthor(): string
     {
         return $this->getUserInfo('name');
     }
 
-    private function getAuthorMail()
+    /**
+     * Return current user eMail as commit eMail.
+     *
+     * @return string current user eMail or empty string
+     *
+     */
+    private function getAuthorMail(): string
     {
         return $this->getUserInfo('mail');
     }
 
-    private function computeLocalPath()
+    private function computeLocalPath(): string
     {
         global $conf;
         $repoPath = str_replace('\\', '/', realpath(GitBackedUtil::getEffectivePath($this->getConf('repoPath'))));
@@ -150,9 +220,8 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         return substr($datadir, strlen($repoPath) + 1);
     }
 
-    private function updatePage($page)
+    private function updatePage($page): void
     {
-
         if (method_exists(Indexer::class, 'addPage')) {
             // Newer DokuWiki: the indexer reports failures as exceptions
             try {
@@ -170,7 +239,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         echo "Update $page: $success <br/>";
     }
 
-    public function handlePeriodicPull(Event &$event, $param)
+    public function handlePeriodicPull(Event &$event, $param): void
     {
         if ($this->getConf('periodicPull')) {
             $enableIndexUpdate = $this->getConf('updateIndexOnPull');
@@ -237,7 +306,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         }
     }
 
-    public function handleMediaDeletion(Event &$event, $param)
+    public function handleMediaDeletion(Event &$event, $param): void
     {
         $mediaPath = $event->data['path'];
         $mediaName = $event->data['name'];
@@ -253,7 +322,6 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
 
     public function handleMediaUpload(Event &$event, $param)
     {
-
         $mediaPath = $event->data[1];
         $mediaName = $event->data[2];
 
@@ -266,47 +334,67 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         $this->commitFile($mediaPath, $message);
     }
 
-    public function handleIOWikiPageWrite(Event &$event, $param)
+    public function handleIOWikiPageWrite(Event &$event, $param): void
     {
+        /** @var Input $INPUT */
+        /** @var string $SUM */
+        global $INPUT, $SUM;
+        dbglog("GitBacked - handleIOWikiPageWrite: Event={" . print_r($event, true) . "}");
+        dbglog("GitBacked - handleIOWikiPageWrite: SUM={" . print_r($SUM, true) . "}");
+        //dbglog("GitBacked - handleIOWikiPageWrite: INPUT={" . print_r($INPUT, true) . "}");
 
-        $rev = $event->data[3];
+        $rev = $event->data[3]; // bool false or timestamp as long
+        if ($rev) {
+            // Archiving former revision of the page - nothing to do.
+            return;
+        }
 
         /* On update to an existing page this event is called twice,
          * once for the transfer of the old version to the attic (rev will have a value)
          * and once to write the new version of the page into the wiki (rev is false)
          */
-        if (!$rev) {
-            $pagePath = $event->data[0][0];
-            $pageName = $event->data[2];
-            $pageNs = $event->data[1];
-            $pageContent = $event->data[0][1];
+        $pagePath = $event->data[0][0]; // Absolute full path name of the page file
+        $nameSpace = $event->data[1]; // Namespace of the page or empty
+        $pageName = $event->data[2]; // Page name as managed by DokuWiki
+        $pageContent = $event->data[0][1]; // Page content
 
-            // get the summary directly from the form input
-            // as the metadata hasn't updated yet
-            $editSummary = $GLOBALS['INPUT']->str('summary');
+        // Get the summary directly from the global $SUM variable.
+        // This is available since DokuWiki commit 514144657a25baed120871a6cee217d67da99b38
+        // from Jun 24, 2012 - within DokuWiki Release 2012-10-13 "Adora Belle"
+        //$editSummary = $INPUT->str('summary');
+        $editSummary = $SUM;
 
-            // empty content indicates a page deletion
-            if ($pageContent == '') {
-                // get the commit text for deletions
-                $msgTemplate = $this->getConf('commitPageMsgDel');
+        // empty content indicates a page deletion
+        if ($pageContent == '') {
+            // get the commit text for deletions
+            $msgTemplate = $this->getConf('commitPageMsgDel');
 
-                // bad hack as DokuWiki deletes the file after this event
-                // thus, let's delete the file by ourselves, so git can recognize the deletion
-                // DokuWiki uses @unlink as well, so no error should be thrown if we delete it twice
-                @unlink($pagePath);
-            } else {
-                //get the commit text for edits
-                $msgTemplate = $this->getConf('commitPageMsg');
-            }
-
-            $message = str_replace(
-                ['%page%', '%summary%', '%ns%'],
-                [$pageName, $editSummary, $pageNs],
-                $msgTemplate
-            );
-
-            $this->commitFile($pagePath, $message);
+            // bad hack as DokuWiki deletes the file after this event
+            // thus, let's delete the file by ourselves, so git can recognize the deletion
+            // DokuWiki uses @unlink as well, so no error should be thrown if we delete it twice
+            @unlink($pagePath);
+        } else {
+            //get the commit text for edits
+            $msgTemplate = $this->getConf('commitPageMsg');
         }
+
+        $message = str_replace(
+            [
+                '%ns:page%',
+                '%page%',
+                '%summary%',
+                '%ns%'
+            ],
+            [
+                ($nameSpace) ? $nameSpace . ':' . $pageName : $pageName,
+                $pageName,
+                $editSummary,
+                $nameSpace
+            ],
+            $msgTemplate
+        );
+
+        $this->commitFile($pagePath, $message);
     }
 
     // ====== Error notification helpers ======
@@ -319,7 +407,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notifyCreateNewError($repo_path, $reference, $error_message)
+    public function notifyCreateNewError($repo_path, $reference, $error_message): bool
     {
         $template_replacements = [
             'GIT_REPO_PATH' => $repo_path,
@@ -337,7 +425,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notifyRepoPathError($repo_path, $error_message)
+    public function notifyRepoPathError($repo_path, $error_message): bool
     {
         $template_replacements = [
             'GIT_REPO_PATH' => $repo_path,
@@ -357,7 +445,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  error message
      * @return  bool
      */
-    public function notifyCommandError($repo_path, $cwd, $command, $status, $error_message)
+    public function notifyCommandError($repo_path, $cwd, $command, $status, $error_message): bool
     {
         $template_replacements = [
             'GIT_REPO_PATH' => $repo_path,
@@ -378,7 +466,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   string  command line
      * @return  bool
      */
-    public function notifyCommandSuccess($repo_path, $cwd, $command)
+    public function notifyCommandSuccess($repo_path, $cwd, $command): bool
     {
         if (!$this->getConf('notifyByMailOnSuccess')) {
             return false;
@@ -400,7 +488,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @param   array   array of replacements
      * @return  bool
      */
-    public function notifyByMail($subject_id, $template_id, $template_replacements)
+    public function notifyByMail($subject_id, $template_id, $template_replacements): bool
     {
         $ret = false;
         //dbglog("GitBacked - notifyByMail: [subject_id=" . $subject_id
@@ -414,7 +502,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
         $template_text = file_get_contents($template_filename);
         $template_html = $this->render_text($template_text);
 
-        $mailer = new \Mailer();
+        $mailer = GitBackedUtil::newMailer();
         $mailer->to($this->getEmailAddressOnErrorConfigured());
         //dbglog("GitBacked - lang check['".$subject_id."']: ".$this->getLang($subject_id));
         //dbglog("GitBacked - template text['".$template_id."']: ".$template_text);
@@ -433,7 +521,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @access  public
      * @return  bool
      */
-    public function isNotifyByEmailOnGitCommandError()
+    public function isNotifyByEmailOnGitCommandError(): bool
     {
         $emailAddressOnError = $this->getEmailAddressOnErrorConfigured();
         return !empty($emailAddressOnError);
@@ -445,7 +533,7 @@ class action_plugin_gitbacked_editcommit extends ActionPlugin
      * @access  public
      * @return  string
      */
-    public function getEmailAddressOnErrorConfigured()
+    public function getEmailAddressOnErrorConfigured(): string
     {
         $emailAddressOnError = trim($this->getConf('emailAddressOnError'));
         return $emailAddressOnError;

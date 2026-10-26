@@ -17,6 +17,8 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
 // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
 
+use action_plugin_gitbacked_editcommit;
+
 // ------------------------------------------------------------------------
 
 /**
@@ -70,10 +72,10 @@ class Git
      * @access  public
      * @param   string  repository path
      * @param   string  directory to source
-     * @param   \action_plugin_gitbacked_editcommit plugin
+     * @param   action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      */
-    public static function &create($repo_path, $source = null, \action_plugin_gitbacked_editcommit $plugin = null)
+    public static function &create($repo_path, $source = null, action_plugin_gitbacked_editcommit $plugin = null)
     {
         return GitRepo::createNew($repo_path, $source, $plugin);
     }
@@ -85,10 +87,10 @@ class Git
      *
      * @access  public
      * @param   string  repository path
-     * @param   \action_plugin_gitbacked_editcommit plugin
+     * @param   action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      */
-    public static function open($repo_path, \action_plugin_gitbacked_editcommit $plugin = null)
+    public static function open($repo_path, action_plugin_gitbacked_editcommit $plugin = null)
     {
         return new GitRepo($repo_path, $plugin);
     }
@@ -103,14 +105,14 @@ class Git
      * @param   string  repository path
      * @param   string  remote source
      * @param   string  reference path
-     * @param   \action_plugin_gitbacked_editcommit plugin
+     * @param   action_plugin_gitbacked_editcommit plugin
      * @return  GitRepo
      **/
     public static function &cloneRemote(
         $repo_path,
         $remote,
         $reference = null,
-        \action_plugin_gitbacked_editcommit $plugin = null
+        action_plugin_gitbacked_editcommit $plugin = null
     ) {
         return GitRepo::createNew($repo_path, $plugin, $remote, true, $reference);
     }

@@ -5,6 +5,9 @@ namespace woolfg\dokuwiki\plugin\gitbacked;
 // phpcs:disable PSR1.Files.SideEffects.FoundWithSymbols
 if (__FILE__ == $_SERVER['SCRIPT_FILENAME']) die('Bad load order');
 
+use Exception;
+use action_plugin_gitbacked_editcommit;
+
 /**
  * Git Repository Interface Class
  *
@@ -25,7 +28,7 @@ class GitRepo
     protected $bare = false;
     protected $envopts = [];
     // Fix for PHP <=7.3 compatibility: Type declarations for properties work since PHP >= 7.4 only.
-    // protected ?\action_plugin_gitbacked_editcommit $plugin = null;
+    // protected ?action_plugin_gitbacked_editcommit $plugin = null;
     protected $plugin;
 
     /**
@@ -34,21 +37,22 @@ class GitRepo
      * Accepts a creation path, and, optionally, a source path
      *
      * @access  public
-     * @param   string  repository path
-     * @param   \action_plugin_gitbacked_editcommit plugin
-     * @param   string  directory to source
-     * @param   string  reference path
+     * @param   string  $repo_path repository path
+     * @param   action_plugin_gitbacked_editcommit $plugin
+     * @param   string  $source directory to source
+     * @param   bool    $remote_source
+     * @param   string  $reference reference path
      * @return  GitRepo  or null in case of an error
      */
     public static function &createNew(
         $repo_path,
-        \action_plugin_gitbacked_editcommit $plugin = null,
+        action_plugin_gitbacked_editcommit $plugin = null,
         $source = null,
         $remote_source = false,
         $reference = null
     ) {
         if (is_dir($repo_path) && file_exists($repo_path . "/.git") && is_dir($repo_path . "/.git")) {
-            throw new \Exception(self::handleCreateNewError(
+            throw new Exception(self::handleCreateNewError(
                 $repo_path,
                 $reference,
                 '"' . $repo_path . '" is already a git repository',
@@ -59,7 +63,7 @@ class GitRepo
         if (is_string($source)) {
             if ($remote_source) {
                 if (!is_dir($reference) || !is_dir($reference . '/.git')) {
-                    throw new \Exception(self::handleCreateNewError(
+                    throw new Exception(self::handleCreateNewError(
                         $repo_path,
                         $reference,
                         '"' . $reference . '" is not a git repository. Cannot use as reference.',
@@ -86,13 +90,14 @@ class GitRepo
      * Accepts a repository path
      *
      * @access  public
-     * @param   string  repository path
-     * @param   \action_plugin_gitbacked_editcommit plugin
-     * @param   bool    create if not exists?
+     * @param   string  $repo_path repository path
+     * @param   action_plugin_gitbacked_editcommit $plugin
+     * @param   bool    $create_new create if not exists?
+     * @return  void
      */
     public function __construct(
         $repo_path = null,
-        \action_plugin_gitbacked_editcommit $plugin = null,
+        action_plugin_gitbacked_editcommit $plugin = null,
         $create_new = false,
         $_init = true
     ) {
@@ -108,9 +113,9 @@ class GitRepo
      * Accepts the repository path
      *
      * @access  public
-     * @param   string  repository path
-     * @param   bool    create if not exists?
-     * @param   bool    initialize new Git repo if not exists?
+     * @param   string  $repo_path repository path
+     * @param   bool    $create_new create if not exists?
+     * @param   bool    $_init initialize new Git repo if not exists?
      * @return  void
      */
     public function setRepoPath($repo_path, $create_new = false, $_init = true)
@@ -136,13 +141,13 @@ class GitRepo
                             $this->run('init');
                         }
                     } else {
-                        throw new \Exception($this->handleRepoPathError(
+                        throw new Exception($this->handleRepoPathError(
                             $repo_path,
                             '"' . $repo_path . '" is not a git repository'
                         ));
                     }
                 } else {
-                    throw new \Exception($this->handleRepoPathError(
+                    throw new Exception($this->handleRepoPathError(
                         $repo_path,
                         '"' . $repo_path . '" is not a directory'
                     ));
@@ -153,13 +158,13 @@ class GitRepo
                     $this->repo_path = $repo_path;
                     if ($_init) $this->run('init');
                 } else {
-                    throw new \Exception($this->handleRepoPathError(
+                    throw new Exception($this->handleRepoPathError(
                         $repo_path,
                         'cannot create repository in non-existent directory'
                     ));
                 }
             } else {
-                throw new \Exception($this->handleRepoPathError(
+                throw new Exception($this->handleRepoPathError(
                     $repo_path,
                     '"' . $repo_path . '" does not exist'
                 ));
@@ -184,7 +189,7 @@ class GitRepo
      * @access  public
      * @return  bool
      */
-    public function testGit()
+    public function testGit(): bool
     {
         $descriptorspec = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $pipes = [];
@@ -206,7 +211,7 @@ class GitRepo
      * Accepts a shell command to run
      *
      * @access  protected
-     * @param   string  command to run
+     * @param   string  $command command to run
      * @return  string  or null in case of an error
      */
     protected function runCommand($command)
@@ -246,7 +251,7 @@ class GitRepo
                 $stderr
             );
             //dbglog("GitBacked - error_message: [".$error_message."]");
-            throw new \Exception($this->handleCommandError(
+            throw new Exception($this->handleCommandError(
                 $this->repo_path,
                 $cwd,
                 $command,
@@ -265,7 +270,7 @@ class GitRepo
      * Accepts a git command to run
      *
      * @access  public
-     * @param   string  command to run
+     * @param   string  $command command to run
      * @return  string
      */
     public function run($command)
@@ -277,13 +282,14 @@ class GitRepo
      * Handles error on create_new
      *
      * @access  protected
-     * @param   string  repository path
-     * @param   string  error message
+     * @param   string  $repo_path repository path
+     * @param   string  $reference item referred
+     * @param   string  $error_message error message
      * @return  string  error message
      */
     protected static function handleCreateNewError($repo_path, $reference, $error_message, $plugin)
     {
-        if ($plugin instanceof \action_plugin_gitbacked_editcommit) {
+        if ($plugin instanceof action_plugin_gitbacked_editcommit) {
             $plugin->notifyCreateNewError($repo_path, $reference, $error_message);
         }
         return $error_message;
@@ -293,13 +299,13 @@ class GitRepo
      * Handles error on setting the repo path
      *
      * @access  protected
-     * @param   string  repository path
-     * @param   string  error message
+     * @param   string  $repo_path repository path
+     * @param   string  $error_message error message
      * @return  string  error message
      */
     protected function handleRepoPathError($repo_path, $error_message)
     {
-        if ($this->plugin instanceof \action_plugin_gitbacked_editcommit) {
+        if ($this->plugin instanceof action_plugin_gitbacked_editcommit) {
             $this->plugin->notifyRepoPathError($repo_path, $error_message);
         }
         return $error_message;
@@ -309,16 +315,16 @@ class GitRepo
      * Handles error on git command
      *
      * @access  protected
-     * @param   string  repository path
-     * @param   string  current working dir
-     * @param   string  command line
-     * @param   int     exit code of command (status)
-     * @param   string  error message
+     * @param   string  $repo_path repository path
+     * @param   string  $cwd current working dir
+     * @param   string  $command command line
+     * @param   int     $status exit code of command (status)
+     * @param   string  $error_message error message
      * @return  string  error message
      */
     protected function handleCommandError($repo_path, $cwd, $command, $status, $error_message)
     {
-        if ($this->plugin instanceof \action_plugin_gitbacked_editcommit) {
+        if ($this->plugin instanceof action_plugin_gitbacked_editcommit) {
             $this->plugin->notifyCommandError($repo_path, $cwd, $command, $status, $error_message);
         }
         return $error_message;
@@ -328,14 +334,14 @@ class GitRepo
      * Handles success on git command
      *
      * @access  protected
-     * @param   string  repository path
-     * @param   string  current working dir
-     * @param   string  command line
+     * @param   string  $repo_path repository path
+     * @param   string  $cwd current working dir
+     * @param   string  $command command line
      * @return  void
      */
     protected function handleCommandSuccess($repo_path, $cwd, $command)
     {
-        if ($this->plugin instanceof \action_plugin_gitbacked_editcommit) {
+        if ($this->plugin instanceof action_plugin_gitbacked_editcommit) {
             $this->plugin->notifyCommandSuccess($repo_path, $cwd, $command);
         }
     }
@@ -346,8 +352,8 @@ class GitRepo
      * Accept a convert to HTML bool
      *
      * @access public
-     * @param bool  return string with <br />
-     * @return string
+     * @param bool    $html return string with <br />
+     * @return string with <br />
      */
     public function status($html = false)
     {
@@ -364,7 +370,7 @@ class GitRepo
      * Accepts a list of files to add
      *
      * @access  public
-     * @param   mixed   files to add
+     * @param   mixed  $files files to add
      * @return  string
      */
     public function add($files = "*")
@@ -381,8 +387,8 @@ class GitRepo
      * Accepts a list of files to remove
      *
      * @access  public
-     * @param   mixed    files to remove
-     * @param   Boolean  use the --cached flag?
+     * @param   mixed  $files files to remove
+     * @param   bool   $cached use the --cached flag?
      * @return  string
      */
     public function rm($files = "*", $cached = false)
@@ -400,8 +406,8 @@ class GitRepo
      * Accepts a commit message string
      *
      * @access  public
-     * @param   string  commit message
-     * @param   boolean  should all files be committed automatically (-a flag)
+     * @param   string $message commit message
+     * @param   bool   $commit_all should all files be committed automatically (-a flag)
      * @return  string
      */
     public function commit($message = "", $commit_all = true)
@@ -422,7 +428,7 @@ class GitRepo
      * Accepts a target directory
      *
      * @access  public
-     * @param   string  target directory
+     * @param   string  $target target directory
      * @return  string
      */
     public function cloneTo($target)
@@ -437,7 +443,7 @@ class GitRepo
      * Accepts a source directory
      *
      * @access  public
-     * @param   string  source directory
+     * @param   string  $source source directory
      * @return  string
      */
     public function cloneFrom($source)
@@ -452,8 +458,8 @@ class GitRepo
      * Accepts a source url
      *
      * @access  public
-     * @param   string  source url
-     * @param   string  reference path
+     * @param   string  $source source url
+     * @param   string  $reference reference path
      * @return  string
      */
     public function cloneRemote($source, $reference)
@@ -467,8 +473,8 @@ class GitRepo
      * Accepts a remove directories flag
      *
      * @access  public
-     * @param   bool    delete directories?
-     * @param   bool    force clean?
+     * @param   bool    $dirs  directories?
+     * @param   bool    $force clean?
      * @return  string
      */
     public function clean($dirs = false, $force = false)
@@ -482,7 +488,7 @@ class GitRepo
      * Accepts a name for the branch
      *
      * @access  public
-     * @param   string  branch name
+     * @param   string  $branch branch name
      * @return  string
      */
     public function createBranch($branch)
@@ -496,7 +502,7 @@ class GitRepo
      * Accepts a name for the branch
      *
      * @access  public
-     * @param   string  branch name
+     * @param   string  $branch branch name
      * @return  string
      */
     public function deleteBranch($branch, $force = false)
@@ -508,7 +514,7 @@ class GitRepo
      * Runs a `git branch` call
      *
      * @access  public
-     * @param   bool    keep asterisk mark on active branch
+     * @param   bool    $keep_asterisk asterisk mark on active branch
      * @return  array
      */
     public function listBranches($keep_asterisk = false)
@@ -550,7 +556,7 @@ class GitRepo
      * Returns name of active branch
      *
      * @access  public
-     * @param   bool    keep asterisk mark on branch name
+     * @param   bool    $keep_asterisk asterisk mark on branch name
      * @return  string
      */
     public function activeBranch($keep_asterisk = false)
@@ -570,7 +576,7 @@ class GitRepo
      * Accepts a name for the branch
      *
      * @access  public
-     * @param   string  branch name
+     * @param   string $branch branch name
      * @return  string
      */
     public function checkout($branch)
@@ -680,7 +686,7 @@ class GitRepo
     /**
      * List log entries.
      *
-     * @param strgin $format
+     * @param string $format
      * @return string
      */
     public function log($format = null)
@@ -716,8 +722,8 @@ class GitRepo
     /**
      * Sets custom environment options for calling Git
      *
-     * @param string key
-     * @param string value
+     * @param string $key
+     * @param string $value
      */
     public function setenv($key, $value)
     {

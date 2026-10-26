@@ -1,0 +1,63 @@
+
+# Run tests manually within VSCode:
+# Env settings:
+# 
+# C:\laragon\www\dokuwiki_git_sources\_test>set                                                                            
+# ALLUSERSPROFILE=C:\ProgramData
+# APPDATA=C:\Users\mhoffrog\AppData\Roaming
+# CHROME_CRASHPAD_PIPE_NAME=\\.\pipe\crashpad_17108_DDSMYXYZJAPUWQVM
+# CommonProgramFiles=C:\Program Files\Common Files
+# CommonProgramFiles(x86)=C:\Program Files (x86)\Common Files
+# CommonProgramW6432=C:\Program Files\Common Files
+# COMPUTERNAME=DEBUDEVCLI01
+# ComSpec=C:\WINDOWS\system32\cmd.exe
+# DriverData=C:\Windows\System32\Drivers\DriverData
+# FPS_BROWSER_APP_PROFILE_STRING=Internet Explorer
+# FPS_BROWSER_USER_PROFILE_STRING=Default
+# GIT_SSH=C:\Program Files\TortoiseGit\bin\TortoiseGitPlink.exe
+# HOMEDRIVE=C:
+# HOMEPATH=\Users\mhoffrog
+# LOCALAPPDATA=C:\Users\mhoffrog\AppData\Local
+# LOGONSERVER=\\DEBUDEVCLI01
+# NUMBER_OF_PROCESSORS=8
+# NVM_HOME=C:\NVM
+# NVM_SYMLINK=C:\Program Files\nodejs
+# OneDrive=C:\Users\mhoffrog\OneDrive
+# ORIGINAL_XDG_CURRENT_DESKTOP=undefined
+# OS=Windows_NT
+# Path=c:\laragon\bin\php\php-7.4.29-Win32-vc15-x64;C:\Windows\System32;C:\Windows;C:\Windows\System32\wbem;C:\Windows\System32\WindowsPowerShell\v1.0\;C:\Program Files\TortoiseSVN\bin;C:\Program Files\SlikSvn\bin;C:\Program Files (x86)\Windows Kits\10\Windows Performance Toolkit\;C:\Windows\System32\OpenSSH\;C:\Program Files\Intel\WiFi\bin\;C:\Program Files\Common Files\Intel\WirelessCommon\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files (x86)\Gpg4win\..\GnuPG\bin;C:\Program Files\dotnet\;C:\Program Files\TortoiseGit\bin;C:\Program Files\Git\cmd;C:\NVM;C:\Program Files\nodejs;"C:\Users\mhoffrog\AppData\Local\Microsoft\WindowsApps";c:\home\MaH\bin;C:\Users\mhoffrog\AppData\Local\Microsoft\WindowsApps;
+# PATHEXT=.COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC
+# PROCESSOR_ARCHITECTURE=AMD64
+# PROCESSOR_IDENTIFIER=Intel64 Family 6 Model 142 Stepping 10, GenuineIntel
+# PROCESSOR_LEVEL=6
+# PROCESSOR_REVISION=8e0a
+# ProgramData=C:\ProgramData
+# ProgramFiles=C:\Program Files
+# ProgramFiles(x86)=C:\Program Files (x86)
+# ProgramW6432=C:\Program Files
+# PROMPT=$P$G
+# PSModulePath=C:\WINDOWS\system32\WindowsPowerShell\v1.0\Modules\
+# PUBLIC=C:\Users\Public
+# SESSIONNAME=Console
+# SVN_SSH=C:\Program Files\TortoiseGit\bin\TortoiseGitPlink.exe
+# SystemDrive=C:
+# SystemRoot=C:\WINDOWS
+# TEMP=C:\Users\mhoffrog\AppData\Local\Temp
+# TMP=C:\Users\mhoffrog\AppData\Local\Temp
+# USERDOMAIN=DEBUDEVCLI01
+# USERDOMAIN_ROAMINGPROFILE=DEBUDEVCLI01
+# USERNAME=mhoffrog
+# USERPROFILE=C:\Users\mhoffrog
+# VS140COMNTOOLS=C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\Tools\
+# windir=C:\WINDOWS
+# TERM_PROGRAM=vscode
+# TERM_PROGRAM_VERSION=1.96.4
+# LANG=en_US.UTF-8
+# COLORTERM=truecolor
+# GIT_ASKPASS=d:\VSCode\1.96.4\resources\app\extensions\git\dist\askpass.sh
+# VSCODE_GIT_ASKPASS_NODE=D:\VSCode\1.96.4\Code.exe
+# VSCODE_GIT_ASKPASS_EXTRA_ARGS=
+# VSCODE_GIT_ASKPASS_MAIN=d:\VSCode\1.96.4\resources\app\extensions\git\dist\askpass-main.js
+# VSCODE_GIT_IPC_HANDLE=\\.\pipe\vscode-git-82e959381c-sock
+# cd  C:\laragon\www\dokuwiki_git_sources\_test>
+# php c:\laragon\bin\composer\composer.phar run test -- --group plugin_gitbacked
