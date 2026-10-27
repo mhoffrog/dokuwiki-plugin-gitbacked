@@ -38,7 +38,7 @@ class GitRepo
      *
      * @access  public
      * @param   string  $repo_path repository path
-     * @param   action_plugin_gitbacked_editcommit $plugin
+     * @param   action_plugin_gitbacked_editcommit|null $plugin
      * @param   string  $source directory to source
      * @param   bool    $remote_source
      * @param   string  $reference reference path
@@ -46,7 +46,7 @@ class GitRepo
      */
     public static function &createNew(
         $repo_path,
-        action_plugin_gitbacked_editcommit $plugin = null,
+        action_plugin_gitbacked_editcommit|null $plugin = null,
         $source = null,
         $remote_source = false,
         $reference = null
@@ -90,14 +90,14 @@ class GitRepo
      * Accepts a repository path
      *
      * @access  public
-     * @param   string  $repo_path repository path
-     * @param   action_plugin_gitbacked_editcommit $plugin
+     * @param   string|null $repo_path repository path
+     * @param   action_plugin_gitbacked_editcommit|null $plugin
      * @param   bool    $create_new create if not exists?
      * @return  void
      */
     public function __construct(
         $repo_path = null,
-        action_plugin_gitbacked_editcommit $plugin = null,
+        action_plugin_gitbacked_editcommit|null $plugin = null,
         $create_new = false,
         $_init = true
     ) {
